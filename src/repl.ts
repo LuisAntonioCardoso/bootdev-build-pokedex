@@ -1,24 +1,21 @@
-import { createInterface } from "node:readline/promises";
+import { type State } from "./state.js";
 import { executeCommand } from "./commands.js";
 
-export function cleanInput(input:string): string[]{
-  return input.toLowerCase().split(" ").filter(item=>item.length!==0);
+export function startREPL(state:State){
+  state.io.prompt();
+
+  state.io.on("line", async (input:string)=>{
+    const args: string[] = cleanInput(input);    
+    if(args.length>0)
+      await executeCommand(state, args);
+    state.io.prompt();
+  });
 }
 
-export function startREPL(){
-  const io = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    prompt: "Pokedex > ",
-  });
-  
-  io.prompt();
-
-  io.on("line", (input:string)=>{
-    const parsed = cleanInput(input);    
-    if(parsed.length>0)
-      executeCommand(parsed);
-    io.prompt();
-  });
-
+export function cleanInput(input:string): string[]{
+  return input
+    .toLowerCase()
+    .trim()
+    .split(" ")
+    .filter(word=>word!=='');
 }
